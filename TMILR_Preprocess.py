@@ -5,7 +5,7 @@ class SingleAsmIns:#single Asemble instruction
     opCode = ""
     insType = ""
     branchOrNot = bool
-    branchTarget = ""
+    isbranchTarget = ""
     rd = ""
     rs1 = ""
     rs2 = ""
@@ -63,7 +63,10 @@ class LocationTag:
     pointAdd = 0x0
     lineNum = 0
     funHeadOrNot = bool
+    branchTarget = bool
+
     def __init__(self,lineNum:int,lineStr:str):
+        self.branchTarget = False
         self.tagStr = lineStr
         self.pointAdd = lineNum + 1
         self.lineNum = lineNum
@@ -113,6 +116,7 @@ class singleAsmFunction:
                     #print("funhead",self.asmFunctionName)
                     self.asmFunctionIns[insNum].funHeadOrNot = True
                 self.asmFunctionIns[insNum+1].locationTag = self.asmFunctionIns[insNum].tagStr
+                self.asmFunctionIns[insNum+1].isbranchTarget = True
 
     def PrintMyself(self):
         print("\nNow Print:", self.asmFunctionName," insnumber = ",self.asmInsNumber)
