@@ -12,6 +12,7 @@ class SingleAsmIns:#single Asemble instruction
     imm = ""
     rStr = ""
     lineNum = 0
+    originalLocation = 0
     correspondDumpInsNum = 0
     correspondBC = []   #correspond binary code line in the dump file
     locationTag = ""
@@ -30,7 +31,8 @@ class SingleAsmIns:#single Asemble instruction
             self.rStr = lineStr.split("\t")[-1]
             #print(self.rStr)
         else:
-            print("non rec ins!\n\n")
+            print(lineStr)
+            print("non rec ins!")
         #print(lineStr.split("\t")[-1])
         op = self.opCode
         if op=="j" or op=="beq" or op=="bne" or op=="blt"or op=="bge" or op=="bltu" or op=="ble" or op=="bgt" \
@@ -50,13 +52,15 @@ class SingleAsmIns:#single Asemble instruction
             (self.rd, self.rs1, self.rs2, self.imm) = self.rStr.split(",")
         else:
             print("ERROR, non rec ins")
-        #self.PrintMyself()
+        #self.PrintMyself = SingleAsmIns.PrintMyself
     def PrintMyself(self):
+        if self.locationTag != '':
+            print(self.locationTag)
         print("\t",self.opCode,"\t",self.rd,self.rs1,self.rs2,self.imm)
-        if len(self.correspondBC)>1:
-            print("this ins has more dumpins")
-            for ins in self.correspondBC:
-                ins.PrintMyself()
+        #if len(self.correspondBC)>1:
+        #    print("this ins has more dumpins")
+        #    for ins in self.correspondBC:
+        #        ins.PrintMyself()
 
 class LocationTag:
     tagStr = ""
@@ -216,9 +220,12 @@ class SingleDumpIns:
         #print("0x%x"%self.address)
     def PrintMyself(self):
         if self.annotation!="":
-            print("0x%x"%self.address," ",self.binaryCode," ",self.opCode," ",self.rd,self.rs1,self.rs2,self.imm," # ",self.annotation)
+            #print("0x%x"%self.address," ",self.binaryCode," ",self.opCode," ",self.rd,self.rs1,self.rs2,self.imm," # ",self.annotation)
+            print( self.binaryCode,' ',self.opCode, " ", self.rd, self.rs1, self.rs2,self.imm, " # ", self.annotation)
         else:
-            print("0x%x" % self.address, " ", self.binaryCode, " ", self.opCode," ", self.rd, self.rs1, self.rs2, self.imm)
+            #print("0x%x" % self.address, " ", self.binaryCode, " ", self.opCode, " ", self.rd, self.rs1, self.rs2,
+            #      self.imm)
+            print( self.binaryCode, " ", self.opCode," ", self.rd, self.rs1, self.rs2, self.imm)
 
 def AsmFilter(rawAsmCode:[]):
     asmFilterResult = []
@@ -266,6 +273,7 @@ def AsmDumpFileAnalysis(AsmCode:[], DumpCode: []):
         #if currentDumpFun.dumpInsNumber = asmfun.asmInsNumber:
 
         #print('found the fun', currentDumpFun.dumpFunctionName)
+        #为了解决机器码和汇编码不是一一对应的问题，需要对两者进行一一对应分析
         for asmInsNum in range(len(asmfun.asmFunctionIns)):#开始扫描当前汇编函数中的每一条指令
             currentAsmIns = asmfun.asmFunctionIns[asmInsNum]
             currentAsmInsNum = asmInsNum
@@ -278,7 +286,8 @@ def AsmDumpFileAnalysis(AsmCode:[], DumpCode: []):
                     #currentAsmIns.PrintMyself()
                     asmfun.asmFunctionIns[currentAsmInsNum].correspondBC.append(currentDumpIns)
                     del currentDumpFun.dumpFunctionIns[0]
-                else:#可能出现误判，这种情况下如果两者的第一后继符合，则判定本条符合
+                else:#可能出现误判，这种情况，反汇编需要继续向下寻找，直到找到与下一条汇编指令相同的代码
+                    currentAsmIns.PrintMyself()
                     asmfun.asmFunctionIns[currentAsmInsNum].correspondBC.append(currentDumpIns)
                     del currentDumpFun.dumpFunctionIns[0]
                     if len(currentDumpFun.dumpFunctionIns) > 0:
